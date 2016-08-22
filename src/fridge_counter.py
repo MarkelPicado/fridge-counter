@@ -31,6 +31,7 @@ from barcode import BarcodeGenerator
 from product.product import Product
 from product import PRODUCT_TYPES
 from magnet.apple import Apple
+from magnet.milk import Milk
 
 FRIDGE = Fridge('NEVERA1', '110::00901')
 PROMPT = 'fridge-counter'
@@ -109,7 +110,9 @@ def is_magnet(barcode):
 ###############
 
 magnet_apple = Apple()
+magnet_milk = Milk()
 FRIDGE.add_magnet(magnet_apple)
+FRIDGE.add_magnet(magnet_milk)
 print "MAGNET BARCODES:"
 for magnet_key in FRIDGE.magnets:
 	print '%s\t%s' % (magnet_key, FRIDGE.magnets[magnet_key].magnet_name)
@@ -129,6 +132,7 @@ while True:
 		barcode = barcode_1 if not is_magnet(barcode_1) else None
 		if magnet_barcode:
 			barcode = raw_input('%s# READING BARCODE FOR %s: ' % (PROMPT, FRIDGE.magnets[magnet_barcode].magnet_name))
+			
 		else:
 			magnet_barcode = raw_input('%s# PLEASE PASS THE MAGNET: ' % (PROMPT))
 
@@ -136,7 +140,10 @@ while True:
 		res = raw_input('%s# BARCODE: %s | Do you want add this product? (s/n) ' % (PROMPT, barcode))
 
 		if res == 's':
-			add_product(magnet_barcode, barcode)
+			if not is_magnet(barcode):
+				add_product(magnet_barcode, barcode)
+			else:
+				print 'ERROR: THAT IS A MAGNET'
 
 	elif command == 'del':
 
@@ -168,8 +175,8 @@ while True:
 	elif command == 'help':
 
 		print 'FRIDGE-COUNTER COMMAND LIST				'
-		print '		    								'
-		print '		    								'
+		print ''
+		print ''
 		print '		help								'
 		print '		add 								'
 		print '		del 								'

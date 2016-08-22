@@ -25,6 +25,8 @@ from product import GENERIC
 
 #MAGNET NAMES
 APPLE = 														'APPLE'
+MILK = 															'MILK'
+
 GENERIC_FOOD = 													'GENERIC-FOOD'
 
 

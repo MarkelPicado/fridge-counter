@@ -53,9 +53,15 @@ class Fridge(object):
 
     def add_product(self, magnet_barcode, p):
         if magnet_barcode in self.magnets.keys() and isinstance(p, Product):
-            self.magnets[magnet_barcode].link_product(p)
-            self.product_barcodes[p.barcode.barcode] = magnet_barcode
-
+            if p.barcode.barcode in self.product_barcodes:
+                if magnet_barcode == self.product_barcodes[p.barcode.barcode]:
+                    self.magnets[magnet_barcode].link_product(p)
+                    self.product_barcodes[p.barcode.barcode] = magnet_barcode
+                else:
+                    print 'ERROR: THERE IS A %s IT IS NOT A %s' % (self.magnets[magnet_barcode].magnet_name, self.magnets[self.product_barcodes[p.barcode.barcode]].magnet_name)
+            else:
+                self.magnets[magnet_barcode].link_product(p)
+                self.product_barcodes[p.barcode.barcode] = magnet_barcode
 
     def kinds_of_product(self, magnet_barcode, obj):
         if magnet_barcode in self.magnets.keys():
