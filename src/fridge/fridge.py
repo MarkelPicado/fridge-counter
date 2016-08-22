@@ -28,118 +28,76 @@ from product.product import Product
 
 class Fridge(object):
 
-	def __init__(self, type, id, products_collection={}):
+    def __init__(self, type, id):
 
-		self.type = type,
-		self.id = id
-		self.products_collection = {}
-		self.barcodes = []
+        self.type = type,
+        self.id = id
+        self.product_barcodes = {}
+        self.magnets = {}
 
-		for product_type in PRODUCT_TYPES:
-			self.products_collection[product_type] = []
+    def add_magnet(self, m):
+        if not m.barcode in self.magnets.keys():
+            self.magnets[m.barcode] = m
 
-		for product_type in products_collection:
-			for product in products_collection[product_type]:
-				self.barcodes.append(product.barcode.barcode)
-				self.products_collection[product_type].append(product)
+    def remove_magnet(self, obj):
+        obj_type = type(obj)
 
+        if isinstance(obj, str):
 
-	def add_product(self, p):
-		added = False
+            if obj in self.magnets.keys():
+                self.magnets.pop(obj)
 
-		products = self.products_collection[p.type]
+        elif isinstance(obj, Magnet):
+            if obj.barcode in self.magnets.keys():
+                self.magnets.pop(obj.barcode)
 
-		if p.barcode.barcode in self.barcodes:
-			added = True
-
-		if not added:
-
-			self.barcodes.append(p.barcode.barcode)
-			self.products_collection[p.type].append(p)
-			return True
-
-		return False
-
-	def remove_product(self, obj, units=1, remove_all=False):
-
-		obj_type = type(obj)
-
-		if isinstance(obj, str):
-
-			if obj in self.barcodes:
-				self._remove_product_1(obj, units=units, remove_all=remove_all)
-
-		elif isinstance(obj, Product):
-			self._remove_product_2(obj, units=units, remove_all=remove_all)
-
-	def _remove_product_1(self, barcode, units, remove_all):
-
-		if remove_all:
-
-			for product_type in self.products_collection:
-				for product in self.products_collection[product_type]:
-
-					if product.barcode.barcode == barcode:
-
-							self.products_collection[product_type].remove(product)
-							self.barcodes.remove(barcode)
-
-		else:
-
-			for product_type in self.products_collection:
-				for product in self.products_collection[product_type]:
-
-					if product.barcode.barcode == barcode:
-
-						product.units -= units
-
-						if product.units < 1:
-
-							self.products_collection[product_type].remove(product)
-							self.barcodes.remove(barcode)
-
-							
-
-	def _remove_product_2(self, p, units, remove_all):
-
-		if remove_all:
-
-			for product in self.products_collection[p.type]:
-
-				if product.barcode.barcode == p.barcode.barcode:
-
-						self.products_collection[p.type].remove(p)
-						self.barcodes.remove(p.barcode.barcode)
+    def add_product(self, magnet_barcode, p):
+        if magnet_barcode in self.magnets.keys() and isinstance(p, Product):
+            self.magnets[magnet_barcode].link_product(p)
+            self.product_barcodes[p.barcode.barcode] = magnet_barcode
 
 
-		else:
-
-			for product in self.products_collection[p.type]:
-
-				if product.barcode.barcode == p.barcode.barcode:
-
-					product.units -= units
-
-					if product.units < 1:
-
-						self.products_collection[p.type].remove(p)
-						self.barcodes.remove(p.barcode.barcode)
+    def kinds_of_product(self, magnet_barcode, obj):
+        if magnet_barcode in self.magnets.keys():
+            if isinstance(obj, Product):
+                    if self.magnets[magnet_barcode].linked_products.get(obj.barcode.barcode):
+                        products = self.magnets[magnet_barcode].linked_products.get(obj.barcode.barcode)
 
 
-	def is_in(self, barcode):
-		return barcode in self.barcodes
+            if isinstance(obj, str):
+                if self.magnets[magnet_barcode].linked_products.get(obj):
+                    products = self.magnets[magnet_barcode].linked_products.get(obj)
 
-	def __str__(self):
-		string = ''
-		for product_type in self.products_collection:
+        return products
 
-			string += '[%s]\n' % product_type
+    def remove_product(self, magnet_barcode, obj, units=1):
+        if magnet_barcode in self.magnets.keys():
+            self.magnets[magnet_barcode].unlink_product(obj, units)
 
-			for product in self.products_collection[product_type]:
 
-				string += '\t+ [%s] %s || %s: \n\t\t- %s\n\t\tAdded date - (%s)\n' % (product.units, product.name, product.used_by.strftime('%Y-%m-%d'), product.description, product.created_date.strftime('%Y-%m-%d'))
+    def is_in(self, barcode):
+        return barcode in self.product_barcodes
 
-		if len(string):
-			return string
+    def __str__(self):
+        string = ''
+        product_types = {}
 
-		return 'EMPTY FRIGE'
+        for t in PRODUCT_TYPES:
+            product_types[t] = []
+
+        for m in self.magnets.values():
+            for linked_products in m.linked_products.values():
+                product_types[m.magnet_type].append(linked_products)
+
+        for product_type in product_types:
+            string += '[%s]\n' % product_type
+
+            product_lists = product_types[product_type]
+            for product_list in product_lists:
+                for product in product_list:
+                    string += '%s\t+ [%s] %s || %s: \n\t\t- %s\n\t\tAdded date - (%s)\n' % (product.barcode.barcode, product.units, product.name, product.used_by.strftime('%Y-%m-%d'), product.description, product.created_date.strftime('%Y-%m-%d'))
+
+        if len(string):
+            return string
+
+        return 'EMPTY FRIGE'
