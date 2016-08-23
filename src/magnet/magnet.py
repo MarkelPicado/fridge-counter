@@ -21,7 +21,7 @@ __date__        = "22/08/2016"
 from product.product import Product
 from barcode.barcode import Barcode
 from barcode import BarcodeGenerator
-
+from magnet_errors import NotLinkedError
 
 
 
@@ -34,6 +34,7 @@ class Magnet(object):
 		self.units = 0
 
 	def link_product(self, p):
+		p.type = self.magnet_type
 		if p.barcode.barcode in self.linked_products.keys():
 
 			for product in self.linked_products[p.barcode.barcode]:
@@ -50,6 +51,7 @@ class Magnet(object):
 
 		self.units += p.units
 
+
 	def unlink_product(self, obj, units=1):
 
 		obj_type = type(obj)
@@ -57,29 +59,42 @@ class Magnet(object):
 		if isinstance(obj, Product):
 
 			if obj.barcode.barcode in self.linked_products.keys():
+
 				self._unlink_product1(obj, units)
 
+			else:
+
+				raise NotLinkedError('The barcode %s is not linked in %s//%s magnet' % (obj.barcode.barcode, self.magnet_name, self.barcode))
+
+
 		elif isinstance(obj, dict):
+
 			self._unlink_product2(obj, units)
 
 		elif isinstance(obj, str):
+
 			self._unlink_product3(obj, units)
 
 
 	def _unlink_product1(self, p, units):
+
 		self.units -= units
+
 		p.units -= units
 
 		if p.units < 1:
 
 			self.linked_products[p.barcode.barcode].remove(p)
 
-		if len(self.linked_products[p.barcode.barcode]) < 1:
+			if len(self.linked_products[p.barcode.barcode]) < 1:
 
-			self.linked_products.pop(p.barcode.barcode, None)
+				self.linked_products.pop(p.barcode.barcode, None)
+
 
 	def _unlink_product2(self, dictt, units):
+
 		barcode = dictt['barcode']
+
 		used_by = dictt['used_by']
 
 		if barcode in self.linked_products.keys():
@@ -87,12 +102,25 @@ class Magnet(object):
 				for product in self.linked_products[barcode]:
 
 					if product.used_by == used_by:
+
 						self._unlink_product1(product, units)
 
+		else:
+
+			raise NotLinkedError('The barcode %s is not linked in %s//%s magnet' % (barcode, self.magnet_name, self.barcode))
+
+
 	def _unlink_product3(self, barcode, units):
+
 		if barcode in self.linked_products.keys():
+
 			product = self.linked_products[barcode][0]
+
 			self._unlink_product1(product, units)
+
+		else:
+
+			raise NotLinkedError('The barcode %s is not linked in %s//%s magnet' % (barcode, self.magnet_name, self.barcode))
 
 
 

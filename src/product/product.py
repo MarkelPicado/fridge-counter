@@ -26,39 +26,45 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.realpath
 
 from barcode import BarcodeFactory
 from barcode.barcode import Barcode
+from product_errors import InvalidUsedByFormat
 
 class Product( object ):
 
-	def __init__( self, barcode, id, name, description, type='GENERIC', used_by=None, units= 1 ):
+	def __init__( self, barcode, id, name, description, used_by=None, units=1 ):
 
 		self.barcode = BarcodeFactory( barcode )
-		self.type = type
+
+		self.type = None
+
 		self.name = name
+
 		self.description = description
+
 		self.created_date = datetime.datetime.now()
-		self.used_by = used_by
-		self.units = units
+
+		if used_by:
+
+			try:
+
+				self.used_by = datetime.datetime.strptime(used_by, '%Y%m%d')
+
+			except ValueError:
+				raise InvalidUsedByFormat('Invalid format for used by field. It must be as "YYYYMMDD" Ex: "20160822"')
+
+		else:
+			self.used_by = datetime.date.today() + datetime.timedelta(10)
+
+
+		self.units = int(units)
 
 
 	def set_barcode( self, barcode ):
 
-		if isinstance( barcode, str ):
+		if isinstance( barcode, Barcode ):
 
-			self._set_barcode_1( barcode )
+			self.barcode = barcode
 
-		elif isinstance( barcode, Barcode ):
-
-			self._set_barcode_2(barcode)
-
-
-	def _set_barcode_1( self, barcode ):
-
-		self.barcode = BarcodeFactory( barcode )
-
-
-	def _set_barcode_2( self, barcode ):
-
-		self.barcode = barcode
+		
 
 	def to_dict( self ):
 

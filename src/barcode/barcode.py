@@ -23,13 +23,11 @@ import sys
 import random
 
 from utils import EAN_BARCODE_COUNTRIES
-
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'src')) # */FridgeCounter/src 
 
 class Barcode(object):
 
-    def __init__(self, barcode=None):
-        self.barcode = barcode
+    barcode = None
 
     @classmethod
     def validate(cls, barcode):
@@ -46,9 +44,8 @@ class Barcode(object):
 
 class EAN13(Barcode):
 
-    def __init__(self, barcode=None):
-        super(EAN13, self).__init__(barcode)
-        
+    def __init__(self, barcode):
+        self.barcode = barcode
         self.country_number = barcode[:3] if barcode else None
         self.company_number = barcode[3:7] if barcode else None
         self.serial_number = barcode[7:12] if barcode else None
@@ -69,11 +66,18 @@ class EAN13(Barcode):
 
     @classmethod
     def validate(cls, barcode):
-        return EAN_BARCODE_COUNTRIES.get(barcode[:3], None)
+        if len(barcode) == 12 or len(barcode) == 13:
+            if len(barcode) == 12:
+                barcode = '0' + barcode
+
+            if EAN_BARCODE_COUNTRIES.get(barcode[:3], None):
+                return True
+
+        return False
 
     @classmethod
     def generate_barcode(cls):
-        country_number = '049'
+        country_number = '084'
         company_number = '0000'
         serial_number = ''.join(random.choice('0123456789') for _ in range(5)) 
         verification_number = '1'

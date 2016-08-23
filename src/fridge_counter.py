@@ -41,45 +41,28 @@ PROMPT = 'fridge-counter'
 def read_barcode():
 	#Aqui vendria todo lo relacionado con la lectura del codigo de barras desde el lector
 	return BarcodeGenerator('EAN13').generate_barcode()
-
+#TODO cambiar el formato de la fecha
 def add_product(magnet_barcode, barcode):
 	barcode = barcode
-	product_name = FRIDGE.magnets[magnet_barcode].magnet_name
-	product_description = raw_input('%s# ENTER PRODUCT DESCRIPTION: --> ' % PROMPT)
-	product_type = FRIDGE.magnets[magnet_barcode].magnet_type
-	product_used_by = raw_input('%s# ENTER PRODUCT USED BY (YYYY-MM-DD): --> ' % PROMPT)
+	product_name = raw_input('%s# ENTER PRODUCT NAME: --> ' % PROMPT)
+	product_description = 'Field to be deleted'
+	product_used_by = raw_input('%s# ENTER PRODUCT USED BY (YYYYMMDD): --> ' % PROMPT)
 	product_units = raw_input('%s# ENTER PRODUCT UNITS NUMBER (1 BY DEFAULT): --> ' % PROMPT)
 
-	if not product_type in PRODUCT_TYPES:
-		product_type = 'GENERIC'
-
-	if product_units:
-		product_units = int(product_units)
-	else:
-		product_units = 1
-
-	if product_used_by:
-		
-		try:
-			product_used_by = datetime.datetime.strptime(product_used_by, '%Y-%m-%d')
-		except ValueError:
-			product_used_by = datetime.date.today() + datetime.timedelta(10)
-
-	else:
-		product_used_by = datetime.date.today() + datetime.timedelta(10)
-
-	product = Product(barcode=barcode, id=barcode[7:12], name=product_name, description=product_description, type=product_type, used_by=product_used_by, units= product_units )
+	product = Product(barcode=barcode, id=barcode[7:12], name=product_name, description=product_description, used_by=product_used_by, units= product_units )
 
 	FRIDGE.add_product(magnet_barcode, product) 
 
-def remove_product(magnet_barcode, barcode):		
+def remove_product(barcode):		
+
 	units = raw_input('%s# HOW MANY UNITS: ' % (PROMPT))
+
 	units = int(units)
 
-	if len(FRIDGE.kinds_of_product(magnet_barcode, barcode)) > 1:
+	if len(FRIDGE.get_product(barcode)) > 1:
 		used_by = {}
 		i = 1
-		for p in FRIDGE.kinds_of_product(magnet_barcode, barcode):
+		for p in FRIDGE.get_product(barcode):
 			used_by[i] = p.used_by
 			i += 1
 
@@ -95,10 +78,11 @@ def remove_product(magnet_barcode, barcode):
 		'barcode': barcode
 		}
 
-		FRIDGE.remove_product(magnet_barcode, remove, units)
+		FRIDGE.remove_product(remove, units)
 
-	elif len(FRIDGE.kinds_of_product(magnet_barcode, barcode)) == 1:
-		FRIDGE.remove_product(magnet_barcode, barcode, units)
+	elif len(FRIDGE.get_product(barcode)) == 1:
+
+		FRIDGE.remove_product(barcode, units)
 
 def is_magnet(barcode):
 	if barcode in FRIDGE.magnets.keys():
@@ -157,17 +141,12 @@ while True:
 		barcode = barcode_1 if not is_magnet(barcode_1) else None
 
 		if not magnet_barcode:
+				
+			res = raw_input('%s# BARCODE: %s | Do you want delete this product? (s/n) ' % (PROMPT, barcode))
 
-			magnet_barcode = FRIDGE.product_barcodes.get(barcode)
+			if res == 's':
 
-			if magnet_barcode:
-				res = raw_input('%s# BARCODE: %s | Do you want delete this product? (s/n) ' % (PROMPT, barcode))
-
-				if res == 's':
-
-					remove_product(magnet_barcode, barcode)
-			else:
-				print 'ERROR: THERE IS NOT THE PRODUCT IN THE FRIDGE'
+				remove_product(barcode)
 
 
 		else:

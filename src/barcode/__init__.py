@@ -24,39 +24,38 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'src')) # */FridgeCounter/src
 
 from barcode import Barcode, EAN13
+from barcode_errors import InvalidBarcode
 
 BARCODE_TYPES = {
-	13: EAN13,
-	12: EAN13
+    EAN13
 }
 
 BARCODE_TYPESS = {
-	'EAN13': EAN13
+    'EAN13': EAN13
 }
 
 def BarcodeFactory(barcode):
-	barcode_type = len(barcode)
-	b_type = BARCODE_TYPES.get(barcode_type, None)
+    barcode_type = len(barcode)
 
-	if b_type:
-		if b_type.validate(barcode):
-			return b_type(barcode)
+    for b_type in BARCODE_TYPES:
+        if b_type.validate(barcode):
+            return b_type(barcode)
 
-	return Barcode(barcode)
+    raise InvalidBarcode('The barcode %s did not match with implemented barcode types %s' % (barcode, BARCODE_TYPESS.keys()))
 
 
 class BarcodeGenerator(object):
     
     def __init__(self, type):
 
-    	if type in BARCODE_TYPESS:
+        if type in BARCODE_TYPESS:
 
-    		self.barcode_type = BARCODE_TYPESS[type]
+            self.barcode_type = BARCODE_TYPESS[type]
 
-    	else:
+        else:
 
-    		self.barcode_type = Barcode
+            self.barcode_type = Barcode
 
     def generate_barcode(self):
-    	return self.barcode_type.generate_barcode()
+        return self.barcode_type.generate_barcode()
 
