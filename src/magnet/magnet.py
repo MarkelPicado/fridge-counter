@@ -21,19 +21,11 @@ __date__        = "22/08/2016"
 from product.product import Product
 from barcode.barcode import Barcode
 from barcode import BarcodeGenerator
-from product import GENERIC 
 
-#MAGNET NAMES
-APPLE = 														'APPLE'
-MILK = 															'MILK'
 
-GENERIC_FOOD = 													'GENERIC-FOOD'
 
 
 class Magnet(object):
-
-	magnet_type = GENERIC
-	magnet_name = 'MAGNET'
 
 	def __init__(self, barcode=None):
 

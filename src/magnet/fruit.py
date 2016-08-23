@@ -24,13 +24,11 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'src')) # */FridgeCounter/src
 
 from magnet import Magnet
-from magnet import APPLE
-from product import FRUIT
 
-class Apple(Magnet):
+class Fruit(Magnet):
 	
-	magnet_type = FRUIT
-	magnet_name = APPLE
+	magnet_type = 'FRUIT'
 
-	def __init__(self, magnet_barcode=None):
-		super(Apple, self).__init__(magnet_barcode)
+	def __init__(self, magnet_name='Fruit', barcode=None):
+		super(Fruit, self).__init__(barcode)
+		self.magnet_name = magnet_name

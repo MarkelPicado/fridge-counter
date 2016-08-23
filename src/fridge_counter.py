@@ -30,8 +30,9 @@ from fridge.fridge import Fridge
 from barcode import BarcodeGenerator
 from product.product import Product
 from product import PRODUCT_TYPES
-from magnet.apple import Apple
-from magnet.milk import Milk
+from magnet.fruit import Fruit
+from magnet.meal import Meal
+from magnet import MAGNET_TYPES
 
 FRIDGE = Fridge('NEVERA1', '110::00901')
 PROMPT = 'fridge-counter'
@@ -109,14 +110,6 @@ def is_magnet(barcode):
 #### MAIN #####
 ###############
 
-magnet_apple = Apple()
-magnet_milk = Milk()
-FRIDGE.add_magnet(magnet_apple)
-FRIDGE.add_magnet(magnet_milk)
-print "MAGNET BARCODES:"
-for magnet_key in FRIDGE.magnets:
-	print '%s\t%s' % (magnet_key, FRIDGE.magnets[magnet_key].magnet_name)
-
 while True:
 
 	
@@ -124,8 +117,20 @@ while True:
 
 
 
+	if command == 'add m':
+		print read_barcode()
+		barcode_1 = raw_input('%s# READING BARCODE: ' % (PROMPT))
+		print MAGNET_TYPES.keys()
+		magnet_type = raw_input('%s# CHOOSE A MAGNET TYPE: ' % (PROMPT))
+		magnet_type_class = MAGNET_TYPES.get(magnet_type)
 
-	if command == 'add':
+		magnet_name = raw_input('%s# ENTER A MAGNET NAME: ' % (PROMPT))
+
+		if magnet_type_class:
+			m = magnet_type_class(magnet_name=magnet_name, barcode=barcode_1)
+			FRIDGE.add_magnet(m)
+
+	elif command == 'add p':
 
 		barcode_1 = raw_input('%s# READING BARCODE: ' % (PROMPT))
 		magnet_barcode = barcode_1 if is_magnet(barcode_1) else None
@@ -171,6 +176,12 @@ while True:
 
 	elif command == 'show':
 		print FRIDGE
+
+	elif command == 'show m':
+		for m_barcode in FRIDGE.magnets:
+			print m_barcode
+			print FRIDGE.magnets[m_barcode].magnet_name
+			print FRIDGE.magnets[m_barcode].magnet_type
 
 	elif command == 'help':
 
