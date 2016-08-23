@@ -1,0 +1,2 @@
+class NotLinkedError(Exception):
+	pass

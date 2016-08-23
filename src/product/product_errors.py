@@ -1,0 +1,2 @@
+class InvalidUsedByFormat(ValueError):
+	pass
