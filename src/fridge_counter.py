@@ -17,9 +17,6 @@ __date__        = "20/08/2016"
 ###############################################################################
 ###############################################################################
 ###############################################################################
-
-
-
 import os
 import sys
 import datetime
@@ -32,7 +29,9 @@ from product.product import Product
 from product import PRODUCT_TYPES
 from magnet.fruit import Fruit
 from magnet.meal import Meal
-from magnet import MAGNET_TYPES
+from magnet import MAGNET_TYPES, load_magnets
+
+load_magnets('magnet')
 
 FRIDGE = Fridge('NEVERA1', '110::00901')
 PROMPT = 'fridge-counter'
@@ -41,17 +40,24 @@ PROMPT = 'fridge-counter'
 def read_barcode():
 	#Aqui vendria todo lo relacionado con la lectura del codigo de barras desde el lector
 	return BarcodeGenerator('EAN13').generate_barcode()
-#TODO cambiar el formato de la fecha
+
+
 def add_product(magnet_barcode, barcode):
+	
 	barcode = barcode
+	
 	product_name = raw_input('%s# ENTER PRODUCT NAME: --> ' % PROMPT)
+	
 	product_description = 'Field to be deleted'
+	
 	product_used_by = raw_input('%s# ENTER PRODUCT USED BY (YYYYMMDD): --> ' % PROMPT)
+	
 	product_units = raw_input('%s# ENTER PRODUCT UNITS NUMBER (1 BY DEFAULT): --> ' % PROMPT)
 
 	product = Product(barcode=barcode, id=barcode[7:12], name=product_name, description=product_description, used_by=product_used_by, units= product_units )
 
 	FRIDGE.add_product(magnet_barcode, product) 
+
 
 def remove_product(barcode):		
 
@@ -84,83 +90,99 @@ def remove_product(barcode):
 
 		FRIDGE.remove_product(barcode, units)
 
-def is_magnet(barcode):
-	if barcode in FRIDGE.magnets.keys():
-		return True
-
-	return False 
-
 ###############
 #### MAIN #####
 ###############
 
+
+print read_barcode()
+print read_barcode()
+print read_barcode()
+
+def custom_string(string):
+	split_string = string.split('\n')
+
+	to_print = '\n'.join('%s# %s' % (PROMPT, line) for line in split_string)
+
+	return to_print
+
+def custom_print(string):
+	split_string = string.split('\n')
+
+	to_print = '\n'.join('%s# %s' % (PROMPT, line) for line in split_string)
+
+	print to_print
+
 while True:
 
 	
-	command = raw_input('%s# ' % PROMPT)
-
-
+	command = raw_input(custom_string(''))
 
 	if command == 'add m':
-		print read_barcode()
-		barcode_1 = raw_input('%s# READING BARCODE: ' % (PROMPT))
-		print MAGNET_TYPES.keys()
-		magnet_type = raw_input('%s# CHOOSE A MAGNET TYPE: ' % (PROMPT))
+
+		barcode_1 = raw_input(custom_string('Reading barcode: '))
+
+		magnet_type = raw_input(custom_string('Choose magnet type: %s ' % MAGNET_TYPES.keys()))
+
 		magnet_type_class = MAGNET_TYPES.get(magnet_type)
 
-		magnet_name = raw_input('%s# ENTER A MAGNET NAME: ' % (PROMPT))
-
 		if magnet_type_class:
+
+			magnet_name = raw_input(custom_string('Enter the magnet name: '))
+
 			m = magnet_type_class(magnet_name=magnet_name, barcode=barcode_1)
+
 			FRIDGE.add_magnet(m)
+
+		else:
+
+			custom_print('There is not a %s magnet type ' % magnet_type)
 
 	elif command == 'add p':
 
-		barcode_1 = raw_input('%s# READING BARCODE: ' % (PROMPT))
-		magnet_barcode = barcode_1 if is_magnet(barcode_1) else None
-		barcode = barcode_1 if not is_magnet(barcode_1) else None
+		barcode_1 = raw_input(custom_string('Reading barcode: '))
+
+		magnet_barcode = barcode_1 if FRIGE.is_magnet(barcode_1) else None
+
+		barcode = barcode_1 if not FRIGE.is_magnet(barcode_1) else None
+
 		if magnet_barcode:
-			barcode = raw_input('%s# READING BARCODE FOR %s: ' % (PROMPT, FRIDGE.magnets[magnet_barcode].magnet_name))
+
+			barcode = raw_input(custom_string('Reading barcode for %s: ' % FRIDGE.magnets[magnet_barcode].magnet_name))
 			
 		else:
-			magnet_barcode = raw_input('%s# PLEASE PASS THE MAGNET: ' % (PROMPT))
 
+			barcode_1 = raw_input(custom_string('Please pass the magnet barcode: '))
 
-		res = raw_input('%s# BARCODE: %s | Do you want add this product? (s/n) ' % (PROMPT, barcode))
+		res = raw_input(custom_string('Barcode: %s | Do you want add this product? (s/n) ' % barcode))
 
 		if res == 's':
-			if not is_magnet(barcode):
-				add_product(magnet_barcode, barcode)
-			else:
-				print 'ERROR: THAT IS A MAGNET'
+
+			add_product(magnet_barcode, barcode)
+
 
 	elif command == 'del':
 
-		barcode_1 = raw_input('%s# READING BARCODE TO DELETE: ' % (PROMPT))
-		magnet_barcode = barcode_1 if is_magnet(barcode_1) else None
-		barcode = barcode_1 if not is_magnet(barcode_1) else None
+		barcode_1 = raw_input(custom_string('Reading barcode: '))
 
-		if not magnet_barcode:
-				
-			res = raw_input('%s# BARCODE: %s | Do you want delete this product? (s/n) ' % (PROMPT, barcode))
+		res = raw_input(custom_string('Barcode: %s | Do you want delete this product? (s/n) ' % barcode))
 
-			if res == 's':
+		if res == 's':
 
-				remove_product(barcode)
-
-
-		else:
-			print 'ERROR: THAT IS A MAGNET'
+			remove_product(barcode)
 
 
 	elif command == 'show':
-		print FRIDGE
+
+		custom_print(str(FRIDGE))
 
 	elif command == 'show m':
+
 		for m_barcode in FRIDGE.magnets:
-			print m_barcode
-			print FRIDGE.magnets[m_barcode].magnet_name
-			print FRIDGE.magnets[m_barcode].magnet_type
+
+			custom_print(m_barcode + '\t' + FRIDGE.magnets[m_barcode].magnet_name + '\t' + FRIDGE.magnets[m_barcode].magnet_type)
+
+
 
 	elif command == 'help':
 

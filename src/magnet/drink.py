@@ -23,11 +23,11 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'src')) # */FridgeCounter/src
 
-import magnet 
+import magnet
 
-__m_type__ = 'MEAL'
+__m_type__ = 'DRINK'
 
-class Meal(magnet.Magnet):
+class Drink(magnet.Magnet):
 	
 	magnet_type = __m_type__
 

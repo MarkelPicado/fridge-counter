@@ -46,6 +46,7 @@ class Fridge(object):
         if not m.barcode in self.magnets.keys():
 
             self.magnets[m.barcode] = m
+
         else:
 
             raise RepeatedMagnetError('The magnet with barcode %s already exists as %s' % (m.barcode, self.magnets[m.barcode].magnet_name))
@@ -69,7 +70,8 @@ class Fridge(object):
 
 
     def add_product(self, magnet_barcode, p):
-        if magnet_barcode in self.magnets.keys() and isinstance(p, Product):
+
+        if self.is_magnet(magnet_barcode) and not self.is_magnet(p.barcode.barcode) and isinstance(p, Product):
 
             if p.barcode.barcode in self.products_barcodes:
 
@@ -90,7 +92,7 @@ class Fridge(object):
                 self.products_barcodes[p.barcode.barcode] = magnet_barcode
 
 
-        elif magnet_barcode == p.barcode.barcode:
+        elif self.is_magnet(p.barcode.barcode):
 
             raise InvalidProductError('This is a magnet')
 
@@ -149,14 +151,22 @@ class Fridge(object):
 
 
     def remove_product(self, barcode, units=1):
-        product = self.get_product(barcode)[0]
+        
+        if not self.is_magnet(barcode):
 
-        magnet_barcode = self.products_barcodes[product.barcode.barcode]
+            product = self.get_product(barcode)[0]
 
-        self.magnets[magnet_barcode].unlink_product(product, units)
+            magnet_barcode = self.products_barcodes[product.barcode.barcode]
 
-        if product.units < 1:
-            self.products_barcodes.pop(barcode)
+            self.magnets[magnet_barcode].unlink_product(product, units)
+
+            if product.units < 1:
+
+                self.products_barcodes.pop(barcode)
+
+        else:
+
+            raise InvalidProductError('The product that you want to add is a magnet')
 
 
 
@@ -164,9 +174,20 @@ class Fridge(object):
 
         return barcode in self.products_barcodes
 
+
+    def is_magnet(self, barcode):
+
+        return barcode in self.magnets.keys()
+
+            
+
     def __str__(self):
 
-        string = ''
+        string = '''
+        \t#####################
+        \t###### FRIDGE #######
+        \t#####################
+        '''
 
         magnet_types = {}
 
@@ -182,7 +203,7 @@ class Fridge(object):
 
         for magnet_type in magnet_types:
 
-            string += '[%s]\n' % magnet_type
+            string += '\t[%s]\n' % magnet_type
 
             product_lists = magnet_types[magnet_type]
 
@@ -190,7 +211,7 @@ class Fridge(object):
 
                 for product in product_list:
 
-                    string += '%s\t+ [%s] %s || %s: \n\t\t- %s\n\t\tAdded date - (%s)\n' % (product.barcode.barcode, product.units, product.name, product.used_by.strftime('%Y-%m-%d'), product.description, product.created_date.strftime('%Y-%m-%d'))
+                    string += '%s\t\t+ [%s] %s || %s: \n\t\t\t- %s\n\t\t\tAdded date - (%s)\n' % (product.barcode.barcode, product.units, product.name, product.used_by.strftime('%Y-%m-%d'), product.description, product.created_date.strftime('%Y-%m-%d'))
 
         if len(string):
 

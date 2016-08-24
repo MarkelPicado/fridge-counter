@@ -17,18 +17,21 @@ __date__        = "22/08/2016"
 ###############################################################################
 ###############################################################################
 ###############################################################################
-
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'src')) # */FridgeCounter/src
 
-from magnet import Magnet
+import magnet 
 
-class Fruit(Magnet):
+__m_type__ = 'FRUIT'
+
+class Fruit(magnet.Magnet):
 	
-	magnet_type = 'FRUIT'
+	magnet_type = __m_type__
 
-	def __init__(self, magnet_name='Fruit', barcode=None):
+	def __init__(self, magnet_name=__m_type__.capitalize(), barcode=None):
+
 		super(Fruit, self).__init__(barcode)
+
 		self.magnet_name = magnet_name
