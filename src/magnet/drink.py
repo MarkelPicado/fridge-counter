@@ -33,6 +33,6 @@ class Drink(magnet.Magnet):
 
 	def __init__(self, magnet_name=__m_type__.capitalize(), barcode=None):
 
-		super(Meal, self).__init__(barcode)
+		super(Drink, self).__init__(barcode)
 		
 		self.magnet_name = magnet_name

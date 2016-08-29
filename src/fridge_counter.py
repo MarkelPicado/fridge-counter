@@ -43,7 +43,8 @@ def read_barcode():
 
 
 def add_product(magnet_barcode, barcode):
-	
+	global FRIDGE
+
 	barcode = barcode
 	
 	product_name = raw_input('%s# ENTER PRODUCT NAME: --> ' % PROMPT)
@@ -59,13 +60,48 @@ def add_product(magnet_barcode, barcode):
 	FRIDGE.add_product(magnet_barcode, product) 
 
 
-def remove_product(barcode):		
+def remove_product(barcode):	
+
+	global FRIDGE	
 
 	units = raw_input('%s# HOW MANY UNITS: ' % (PROMPT))
 
 	units = int(units)
 
-	if len(FRIDGE.get_product(barcode)) > 1:
+	if FRIDGE.is_magnet(barcode):
+
+		i = 1
+
+		for bcode in FRIDGE.magnets[barcode].linked_products:
+
+			products = {}
+			
+			for p in FRIDGE.get_product(bcode):
+				products[i] = {
+				'used_by': p.used_by,
+				'barcode': p.barcode.barcode,
+				'name':	   p.name
+				}
+				i += 1
+
+			custom_print('Choose a product to delete for magnet: %s' % FRIDGE.magnets[barcode].magnet_name)
+			
+		for u in products:
+
+			print '- %s ( %s )' % (u, products[u])
+
+			selecction = raw_input('%s# YOUR CHOICE: ' % (PROMPT))
+
+			remove = {
+			'used_by': products[int(selecction)]['used_by'],
+			'barcode': products[int(selecction)]['barcode']
+			}
+
+			FRIDGE.remove_product(remove, units)
+
+
+
+	elif len(FRIDGE.get_product(barcode)) > 1:
 		used_by = {}
 		i = 1
 		for p in FRIDGE.get_product(barcode):
@@ -90,14 +126,6 @@ def remove_product(barcode):
 
 		FRIDGE.remove_product(barcode, units)
 
-###############
-#### MAIN #####
-###############
-
-
-print read_barcode()
-print read_barcode()
-print read_barcode()
 
 def custom_string(string):
 	split_string = string.split('\n')
@@ -112,6 +140,16 @@ def custom_print(string):
 	to_print = '\n'.join('%s# %s' % (PROMPT, line) for line in split_string)
 
 	print to_print
+
+###############
+#### MAIN #####
+###############
+
+
+print read_barcode()
+print read_barcode()
+print read_barcode()
+
 
 while True:
 
@@ -142,9 +180,9 @@ while True:
 
 		barcode_1 = raw_input(custom_string('Reading barcode: '))
 
-		magnet_barcode = barcode_1 if FRIGE.is_magnet(barcode_1) else None
+		magnet_barcode = barcode_1 if FRIDGE.is_magnet(barcode_1) else None
 
-		barcode = barcode_1 if not FRIGE.is_magnet(barcode_1) else None
+		barcode = barcode_1 if not FRIDGE.is_magnet(barcode_1) else None
 
 		if magnet_barcode:
 
@@ -152,7 +190,7 @@ while True:
 			
 		else:
 
-			barcode_1 = raw_input(custom_string('Please pass the magnet barcode: '))
+			magnet_barcode = raw_input(custom_string('Please pass the magnet barcode: '))
 
 		res = raw_input(custom_string('Barcode: %s | Do you want add this product? (s/n) ' % barcode))
 
@@ -163,7 +201,7 @@ while True:
 
 	elif command == 'del':
 
-		barcode_1 = raw_input(custom_string('Reading barcode: '))
+		barcode = raw_input(custom_string('Reading barcode: '))
 
 		res = raw_input(custom_string('Barcode: %s | Do you want delete this product? (s/n) ' % barcode))
 
@@ -175,6 +213,7 @@ while True:
 	elif command == 'show':
 
 		custom_print(str(FRIDGE))
+		
 
 	elif command == 'show m':
 

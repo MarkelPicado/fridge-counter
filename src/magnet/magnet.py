@@ -60,7 +60,7 @@ class Magnet(object):
 
 			if obj.barcode.barcode in self.linked_products.keys():
 
-				self._unlink_product1(obj, units)
+				return self._unlink_product1(obj, units)
 
 			else:
 
@@ -69,11 +69,11 @@ class Magnet(object):
 
 		elif isinstance(obj, dict):
 
-			self._unlink_product2(obj, units)
+			return self._unlink_product2(obj, units)
 
 		elif isinstance(obj, str):
 
-			self._unlink_product3(obj, units)
+			return self._unlink_product3(obj, units)
 
 
 	def _unlink_product1(self, p, units):
@@ -90,6 +90,10 @@ class Magnet(object):
 
 				self.linked_products.pop(p.barcode.barcode, None)
 
+				return None
+
+		return 1
+
 
 	def _unlink_product2(self, dictt, units):
 
@@ -103,7 +107,7 @@ class Magnet(object):
 
 					if product.used_by == used_by:
 
-						self._unlink_product1(product, units)
+						return self._unlink_product1(product, units)
 
 		else:
 
@@ -116,7 +120,7 @@ class Magnet(object):
 
 			product = self.linked_products[barcode][0]
 
-			self._unlink_product1(product, units)
+			return self._unlink_product1(product, units)
 
 		else:
 

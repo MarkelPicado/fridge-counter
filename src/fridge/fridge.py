@@ -150,23 +150,29 @@ class Fridge(object):
         return products
 
 
-    def remove_product(self, barcode, units=1):
-        
+    def remove_product(self, obj, units=1):
+
+        if isinstance(obj, dict):
+
+            barcode = obj['barcode']
+
+        elif isinstance(obj, str):
+
+            barcode = obj
+
         if not self.is_magnet(barcode):
 
-            product = self.get_product(barcode)[0]
+            magnet_barcode = self.products_barcodes[barcode]
 
-            magnet_barcode = self.products_barcodes[product.barcode.barcode]
+            ret = self.magnets[magnet_barcode].unlink_product(obj, units)
 
-            self.magnets[magnet_barcode].unlink_product(product, units)
-
-            if product.units < 1:
+            if not ret:
 
                 self.products_barcodes.pop(barcode)
 
         else:
 
-            raise InvalidProductError('The product that you want to add is a magnet')
+            raise InvalidProductError('The product that you want to delete is a magnet')
 
 
 
